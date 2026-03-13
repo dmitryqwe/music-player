@@ -1,0 +1,1625 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player | Нотный дизайн</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        /* Нотки на заднем фоне */
+        .note {
+            position: fixed;
+            color: rgba(255, 255, 255, 0.15);
+            font-size: 40px;
+            user-select: none;
+            pointer-events: none;
+            z-index: 1;
+            animation: floatNote linear infinite;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .note:nth-child(1) { left: 5%; animation-duration: 20s; animation-delay: 0s; top: 10%; }
+        .note:nth-child(2) { left: 15%; animation-duration: 25s; animation-delay: 2s; top: 30%; }
+        .note:nth-child(3) { left: 25%; animation-duration: 22s; animation-delay: 4s; top: 60%; }
+        .note:nth-child(4) { left: 35%; animation-duration: 28s; animation-delay: 1s; top: 80%; }
+        .note:nth-child(5) { left: 45%; animation-duration: 24s; animation-delay: 3s; top: 20%; }
+        .note:nth-child(6) { left: 55%; animation-duration: 26s; animation-delay: 5s; top: 70%; }
+        .note:nth-child(7) { left: 65%; animation-duration: 23s; animation-delay: 0.5s; top: 40%; }
+        .note:nth-child(8) { left: 75%; animation-duration: 27s; animation-delay: 2.5s; top: 90%; }
+        .note:nth-child(9) { left: 85%; animation-duration: 21s; animation-delay: 4.5s; top: 15%; }
+        .note:nth-child(10) { left: 95%; animation-duration: 29s; animation-delay: 1.5s; top: 50%; }
+        .note:nth-child(11) { left: 10%; animation-duration: 18s; animation-delay: 3.5s; top: 45%; }
+        .note:nth-child(12) { left: 20%; animation-duration: 30s; animation-delay: 0.2s; top: 75%; }
+        .note:nth-child(13) { left: 30%; animation-duration: 19s; animation-delay: 2.2s; top: 25%; }
+        .note:nth-child(14) { left: 40%; animation-duration: 24s; animation-delay: 4.2s; top: 55%; }
+        .note:nth-child(15) { left: 50%; animation-duration: 22s; animation-delay: 1.2s; top: 85%; }
+        .note:nth-child(16) { left: 60%; animation-duration: 26s; animation-delay: 3.2s; top: 35%; }
+        .note:nth-child(17) { left: 70%; animation-duration: 20s; animation-delay: 0.8s; top: 65%; }
+        .note:nth-child(18) { left: 80%; animation-duration: 23s; animation-delay: 2.8s; top: 95%; }
+        .note:nth-child(19) { left: 90%; animation-duration: 27s; animation-delay: 4.8s; top: 5%; }
+        .note:nth-child(20) { left: 96%; animation-duration: 25s; animation-delay: 1.8s; top: 48%; }
+
+        @keyframes floatNote {
+            from {
+                transform: translateY(0) rotate(0deg) scale(1);
+                opacity: 0.1;
+            }
+            25% {
+                transform: translateY(-20px) rotate(90deg) scale(1.2);
+                opacity: 0.2;
+            }
+            50% {
+                transform: translateY(-40px) rotate(180deg) scale(1.1);
+                opacity: 0.15;
+            }
+            75% {
+                transform: translateY(-20px) rotate(270deg) scale(1.3);
+                opacity: 0.2;
+            }
+            to {
+                transform: translateY(0) rotate(360deg) scale(1);
+                opacity: 0.1;
+            }
+        }
+
+        .player-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 900px; /* Еще шире */
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+            position: relative;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .player-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .player-header::before {
+            content: '♪ ♫ ♪ ♫ ♪ ♩ ♪ ♫ ♩';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-5deg);
+            font-size: 80px;
+            opacity: 0.1;
+            white-space: nowrap;
+            width: 100%;
+            text-align: center;
+            letter-spacing: 10px;
+            animation: headerNotes 20s linear infinite;
+            color: white;
+        }
+
+        @keyframes headerNotes {
+            from { transform: translate(-50%, -50%) rotate(-5deg) translateX(0); }
+            to { transform: translate(-50%, -50%) rotate(-5deg) translateX(-100px); }
+        }
+
+        .player-header h1 {
+            font-size: 32px;
+            margin-bottom: 8px;
+            font-weight: 700;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .player-header p {
+            opacity: 0.95;
+            font-size: 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .url-input-section {
+            padding: 20px 30px;
+            background: white;
+            border-bottom: 1px solid #f0f0f0;
+            flex-shrink: 0;
+        }
+
+        .url-input-section label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .url-input-container {
+            display: flex;
+            gap: 12px;
+        }
+
+        #folderUrl {
+            flex: 1;
+            padding: 14px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 15px;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+
+        #folderUrl:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        #loadBtn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s;
+            white-space: nowrap;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        #loadBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        #loadBtn:active {
+            transform: translateY(0);
+        }
+
+        #loadBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .example-link {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #999;
+        }
+
+        .example-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .example-link a:hover {
+            text-decoration: underline;
+        }
+
+        .now-playing {
+            padding: 20px 30px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+            background: linear-gradient(135deg, #ffffff, #fafafa);
+            flex-shrink: 0;
+        }
+
+        .track-info {
+            margin-bottom: 15px;
+        }
+
+        .track-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+        }
+
+        .track-artist {
+            font-size: 16px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .track-artist span {
+            background: #f0f0f0;
+            padding: 4px 12px;
+            border-radius: 25px;
+            font-size: 13px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        /* Плашка перемотки */
+        .progress-container {
+            padding: 10px 30px 15px;
+            background: white;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            position: relative;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 10px;
+            width: 0%;
+            position: relative;
+            transition: width 0.1s linear;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .progress-bar:hover .progress-fill::after {
+            opacity: 1;
+        }
+
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #888;
+        }
+
+        /* Регулятор громкости */
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 30px;
+            background: white;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .volume-icon {
+            font-size: 22px;
+            color: #667eea;
+            width: 35px;
+            text-align: center;
+        }
+
+        .volume-slider {
+            flex: 1;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .volume-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 10px;
+            width: 100%;
+        }
+
+        .volume-percent {
+            font-size: 14px;
+            color: #666;
+            min-width: 45px;
+            text-align: right;
+            font-weight: 500;
+        }
+
+        /* Кнопки управления */
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+            padding: 15px 30px;
+            background: white;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+            transition: all 0.3s;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .control-btn:hover {
+            color: #667eea;
+            transform: scale(1.15);
+            background: #f0f0f0;
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .control-btn.play-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            width: 60px;
+            height: 60px;
+            font-size: 32px;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .control-btn.play-btn:hover {
+            transform: scale(1.2);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .control-btn.active {
+            color: #667eea;
+        }
+
+        /* БОЛЬШОЙ ПЛЕЙЛИСТ */
+        .playlist {
+            background: #f8f9fa;
+            padding: 25px 30px;
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            min-height: 350px;
+        }
+
+        .playlist-header {
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .playlist-header h3 {
+            color: #333;
+            font-size: 20px;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #667eea;
+            display: inline-block;
+        }
+
+        .stats {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .stats span {
+            background: #e0e0e0;
+            padding: 5px 15px;
+            border-radius: 25px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        #foldersContainer {
+            overflow-y: auto;
+            padding-right: 10px;
+            flex: 1;
+        }
+
+        .folder-section {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 15px;
+            overflow: hidden;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .folder-section:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .folder-header {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            color: #333;
+            padding: 18px 20px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .folder-header:hover {
+            background: linear-gradient(135deg, #e9ecef, #dee2e6);
+            padding-left: 25px;
+        }
+
+        .folder-header.collapsed .arrow {
+            transform: rotate(-90deg);
+        }
+
+        .folder-count {
+            font-size: 13px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 25px;
+            margin-left: 10px;
+            font-weight: 500;
+        }
+
+        .arrow {
+            font-size: 16px;
+            color: #667eea;
+            transition: transform 0.3s;
+        }
+
+        .folder-download {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 6px 15px;
+            border-radius: 25px;
+            font-size: 13px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: all 0.3s;
+        }
+
+        .folder-download:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .folder-songs {
+            list-style: none;
+            padding: 15px;
+            background: white;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .folder-songs li {
+            padding: 14px 18px;
+            margin: 8px 0;
+            background: #f8f9fa;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 15px;
+            transition: all 0.2s;
+            border: 1px solid #eee;
+        }
+
+        .folder-songs li:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+            border-color: #667eea;
+            box-shadow: 0 4px 10px rgba(102, 126, 234, 0.15);
+        }
+
+        .folder-songs li.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .song-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .song-name {
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .song-artist {
+            font-size: 13px;
+            color: #999;
+            background: #e0e0e0;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .folder-songs li.active .song-artist {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .download-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #999;
+            padding: 6px 12px;
+            border-radius: 20px;
+            transition: all 0.2s;
+        }
+
+        .download-btn:hover {
+            color: #667eea;
+            background: #e0e0e0;
+            transform: scale(1.1);
+        }
+
+        .folder-songs li.active .download-btn {
+            color: white;
+        }
+
+        .folder-songs li.active .download-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .loading, .error {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+            font-size: 16px;
+        }
+
+        .error {
+            color: #e74c3c;
+        }
+
+        /* Скроллбар */
+        #foldersContainer::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        #foldersContainer::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        #foldersContainer::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+
+        #foldersContainer::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #5a67d8, #6b46a0);
+        }
+
+        /* Модальное окно */
+        .welcome-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .welcome-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+            transform: scale(0.9);
+            transition: transform 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .welcome-modal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-icon {
+            font-size: 70px;
+            margin-bottom: 20px;
+            animation: iconPulse 2s infinite;
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .modal-content h2 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .modal-content p {
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .feature {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 15px;
+            transition: all 0.3s;
+        }
+
+        .feature:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .feature span {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .modal-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .modal-btn:active {
+            transform: translateY(0);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s;
+        }
+
+        .close-btn:hover {
+            color: #667eea;
+        }
+
+        /* Адаптация для телефонов */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .player-container {
+                height: 95vh;
+                border-radius: 20px;
+            }
+
+            .player-header h1 {
+                font-size: 26px;
+            }
+
+            .url-input-container {
+                flex-direction: column;
+            }
+
+            #loadBtn {
+                width: 100%;
+            }
+
+            .playlist {
+                padding: 20px;
+            }
+
+            .folder-header {
+                padding: 15px;
+                font-size: 15px;
+            }
+
+            .folder-songs li {
+                padding: 12px;
+                font-size: 14px;
+            }
+
+            .song-info {
+                gap: 8px;
+            }
+
+            .controls {
+                gap: 15px;
+            }
+
+            .control-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 24px;
+            }
+
+            .control-btn.play-btn {
+                width: 55px;
+                height: 55px;
+                font-size: 28px;
+            }
+
+            .modal-content {
+                padding: 30px 20px;
+            }
+
+            .modal-content h2 {
+                font-size: 28px;
+            }
+
+            .features {
+                gap: 10px;
+            }
+
+            .feature {
+                padding: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .player-header h1 {
+                font-size: 24px;
+            }
+
+            .track-name {
+                font-size: 18px;
+            }
+
+            .track-artist {
+                font-size: 14px;
+            }
+
+            .folder-header {
+                font-size: 14px;
+            }
+
+            .folder-songs li {
+                font-size: 13px;
+            }
+
+            .song-name {
+                font-size: 13px;
+            }
+
+            .song-artist {
+                font-size: 11px;
+            }
+
+            .note {
+                font-size: 30px;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body>
+    <!-- Нотки на фоне (20 штук) -->
+    <div class="note">♪</div>
+    <div class="note">♫</div>
+    <div class="note">♩</div>
+    <div class="note">♪</div>
+    <div class="note">♫</div>
+    <div class="note">♩</div>
+    <div class="note">♪</div>
+    <div class="note">♫</div>
+    <div class="note">♩</div>
+    <div class="note">♪</div>
+    <div class="note">♫</div>
+    <div class="note">♩</div>
+    <div class="note">♪</div>
+    <div class="note">♫</div>
+    <div class="note">♩</div>
+    <div class="note">♪</div>
+    <div class="note">♫</div>
+    <div class="note">♩</div>
+    <div class="note">♪</div>
+    <div class="note">♫</div>
+
+    <!-- Модальное окно -->
+    <div class="welcome-modal" id="welcomeModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeWelcomeModal()">&times;</button>
+            <div class="modal-icon">🎵</div>
+            <h2>Добро пожаловать!</h2>
+            <p>Музыкальный плеер с поддержкой Яндекс.Диска</p>
+            
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <span>Быстрая загрузка</span>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔄</div>
+                    <span>Перемешка</span>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔁</div>
+                    <span>Повтор</span>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📦</div>
+                    <span>Скачать папку</span>
+                </div>
+            </div>
+
+            <button class="modal-btn" onclick="closeWelcomeModal()">Начать</button>
+        </div>
+    </div>
+
+    <div class="player-container">
+        <div class="player-header">
+            <h1>🎵 Music Player</h1>
+            <p>Вставь ссылку на папку Яндекс.Диска</p>
+        </div>
+
+        <div class="url-input-section">
+            <label for="folderUrl">Ссылка на папку Яндекс.Диска:</label>
+            <div class="url-input-container">
+                <input type="url" id="folderUrl" placeholder="https://disk.yandex.ru/d/..." value="https://disk.yandex.ru/d/FnqHGrznQ0Ymyw">
+                <button id="loadBtn">🚀 Загрузить</button>
+            </div>
+            <div class="example-link">
+                Пример: <a href="#" onclick="setExampleUrl(); return false;">https://disk.yandex.ru/d/FnqHGrznQ0Ymyw</a>
+            </div>
+        </div>
+
+        <div class="now-playing">
+            <div class="track-info">
+                <div class="track-name" id="currentTrack">Выберите трек</div>
+                <div class="track-artist" id="currentArtist">
+                    Нажмите Загрузить
+                    <span>📁</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Плашка перемотки -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="time-info">
+                <span id="currentTime">0:00</span>
+                <span id="duration">0:00</span>
+            </div>
+        </div>
+
+        <!-- Регулятор громкости -->
+        <div class="volume-control">
+            <span class="volume-icon" id="volumeIcon">🔊</span>
+            <div class="volume-slider" id="volumeSlider">
+                <div class="volume-fill" id="volumeFill" style="width: 100%"></div>
+            </div>
+            <span class="volume-percent" id="volumePercent">100%</span>
+        </div>
+
+        <!-- Кнопки управления -->
+        <div class="controls">
+            <button class="control-btn" id="shuffleBtn" title="Перемешать">🔀</button>
+            <button class="control-btn" id="prevBtn">⏮️</button>
+            <button class="control-btn play-btn" id="playBtn">▶️</button>
+            <button class="control-btn" id="nextBtn">⏭️</button>
+            <button class="control-btn" id="repeatBtn" title="Повтор">🔁</button>
+        </div>
+
+        <!-- БОЛЬШОЙ ПЛЕЙЛИСТ -->
+        <div class="playlist">
+            <div class="playlist-header">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>📋 Плейлист</h3>
+                    <div style="display: flex; gap: 8px;">
+                        <button id="expandAllBtn" style="background: #f0f0f0; border: none; padding: 6px 15px; border-radius: 25px; font-size: 13px; cursor: pointer;">🔽 Все</button>
+                        <button id="collapseAllBtn" style="background: #f0f0f0; border: none; padding: 6px 15px; border-radius: 25px; font-size: 13px; cursor: pointer;">🔼 Все</button>
+                    </div>
+                </div>
+                <div id="stats" class="stats">
+                    <span>0 треков</span>
+                </div>
+            </div>
+            
+            <div id="loadingMessage" class="loading" style="display: none;">🔍 Сканируем папки...</div>
+            <div id="progressMessage" class="loading" style="display: none;"></div>
+            <div id="errorMessage" class="error" style="display: none;"></div>
+            <div id="foldersContainer"></div>
+        </div>
+
+        <audio id="audioPlayer" preload="auto"></audio>
+    </div>
+
+    <script>
+        // Переменные плеера
+        let allTracks = [];
+        let currentTrack = 0;
+        let isPlaying = false;
+        let isShuffle = false;
+        let isRepeat = false;
+        let shuffledOrder = [];
+        
+        // Элементы DOM
+        const audioPlayer = document.getElementById('audioPlayer');
+        const trackNameEl = document.getElementById('currentTrack');
+        const trackArtistEl = document.getElementById('currentArtist');
+        const playBtn = document.getElementById('playBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const shuffleBtn = document.getElementById('shuffleBtn');
+        const repeatBtn = document.getElementById('repeatBtn');
+        const foldersContainer = document.getElementById('foldersContainer');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const progressMessage = document.getElementById('progressMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        const statsEl = document.getElementById('stats');
+        const folderUrlInput = document.getElementById('folderUrl');
+        const loadBtn = document.getElementById('loadBtn');
+        const expandAllBtn = document.getElementById('expandAllBtn');
+        const collapseAllBtn = document.getElementById('collapseAllBtn');
+        
+        // Элементы для перемотки
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const currentTimeSpan = document.getElementById('currentTime');
+        const durationSpan = document.getElementById('duration');
+        
+        // Элементы для громкости
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeFill = document.getElementById('volumeFill');
+        const volumeIcon = document.getElementById('volumeIcon');
+        const volumePercent = document.getElementById('volumePercent');
+
+        // Функция для закрытия модального окна
+        window.closeWelcomeModal = function() {
+            document.getElementById('welcomeModal').classList.remove('show');
+        };
+
+        // Показываем модальное окно при загрузке
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('welcomeModal').classList.add('show');
+            }, 500);
+        });
+
+        // Функция для установки примера ссылки
+        window.setExampleUrl = function() {
+            folderUrlInput.value = 'https://disk.yandex.ru/d/FnqHGrznQ0Ymyw';
+        };
+
+        // === ФУНКЦИИ ДЛЯ ПЕРЕМЕШКИ И ПОВТОРА ===
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function updateShuffleOrder() {
+            if (allTracks.length > 0) {
+                shuffledOrder = Array.from({ length: allTracks.length }, (_, i) => i);
+                shuffleArray(shuffledOrder);
+            }
+        }
+
+        function getNextTrackIndex() {
+            if (isShuffle) {
+                const currentPos = shuffledOrder.indexOf(currentTrack);
+                return shuffledOrder[(currentPos + 1) % shuffledOrder.length];
+            } else {
+                let next = currentTrack + 1;
+                if (next >= allTracks.length) {
+                    return isRepeat ? 0 : currentTrack;
+                }
+                return next;
+            }
+        }
+
+        function getPrevTrackIndex() {
+            if (isShuffle) {
+                const currentPos = shuffledOrder.indexOf(currentTrack);
+                return shuffledOrder[(currentPos - 1 + shuffledOrder.length) % shuffledOrder.length];
+            } else {
+                let prev = currentTrack - 1;
+                if (prev < 0) {
+                    return isRepeat ? allTracks.length - 1 : 0;
+                }
+                return prev;
+            }
+        }
+
+        // Обработчики для кнопок перемешки и повтора
+        shuffleBtn.addEventListener('click', () => {
+            isShuffle = !isShuffle;
+            shuffleBtn.style.color = isShuffle ? '#667eea' : '#666';
+            if (isShuffle) {
+                updateShuffleOrder();
+            }
+        });
+
+        repeatBtn.addEventListener('click', () => {
+            isRepeat = !isRepeat;
+            repeatBtn.style.color = isRepeat ? '#667eea' : '#666';
+        });
+
+        // === ОБНОВЛЕНИЕ ПРОГРЕССА ===
+        function updateProgress() {
+            if (audioPlayer.duration) {
+                const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                progressFill.style.width = percent + '%';
+                currentTimeSpan.textContent = formatTime(audioPlayer.currentTime);
+                durationSpan.textContent = formatTime(audioPlayer.duration);
+            }
+        }
+
+        // === ФОРМАТИРОВАНИЕ ВРЕМЕНИ ===
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // === ПЕРЕМОТКА ===
+        progressBar.addEventListener('click', (e) => {
+            const rect = progressBar.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audioPlayer.currentTime = percent * audioPlayer.duration;
+        });
+
+        // === РЕГУЛЯТОР ГРОМКОСТИ ===
+        function updateVolume() {
+            const percent = audioPlayer.volume * 100;
+            volumeFill.style.width = percent + '%';
+            volumePercent.textContent = Math.round(percent) + '%';
+            
+            if (percent === 0) {
+                volumeIcon.textContent = '🔇';
+            } else if (percent < 30) {
+                volumeIcon.textContent = '🔈';
+            } else if (percent < 70) {
+                volumeIcon.textContent = '🔉';
+            } else {
+                volumeIcon.textContent = '🔊';
+            }
+        }
+
+        volumeSlider.addEventListener('click', (e) => {
+            const rect = volumeSlider.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audioPlayer.volume = Math.max(0, Math.min(1, percent));
+            updateVolume();
+        });
+
+        audioPlayer.addEventListener('volumechange', updateVolume);
+        updateVolume();
+
+        // === МАКСИМАЛЬНАЯ СКОРОСТЬ СКАЧИВАНИЯ ===
+        const MAX_CONCURRENT_DOWNLOADS = 25;
+        let downloadQueue = [];
+        let totalDownloaded = 0;
+        let totalFiles = 0;
+
+        async function downloadFileChunked(url) {
+            const response = await fetch(url);
+            const reader = response.body.getReader();
+            const chunks = [];
+            
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                chunks.push(value);
+            }
+            
+            return new Blob(chunks, { type: 'audio/mpeg' });
+        }
+
+        async function processDownloadQueue(zip, updateProgress) {
+            const workers = [];
+            for (let i = 0; i < MAX_CONCURRENT_DOWNLOADS; i++) {
+                workers.push(downloadWorker(zip, updateProgress));
+            }
+            await Promise.all(workers);
+        }
+
+        async function downloadWorker(zip, updateProgress) {
+            while (downloadQueue.length > 0) {
+                const song = downloadQueue.shift();
+                try {
+                    updateProgress(`📥 ${totalDownloaded + 1}/${totalFiles}`);
+                    const blob = await downloadFileChunked(song.url);
+                    const filename = song.originalName || `${song.name} - ${song.artist}.mp3`;
+                    zip.file(filename, blob);
+                    totalDownloaded++;
+                } catch (error) {
+                    console.error('Ошибка загрузки:', song.name);
+                }
+            }
+        }
+
+        async function downloadFolderAsZip(songs, folderName) {
+            if (songs.length === 0) return;
+            
+            const downloadMessage = document.createElement('div');
+            downloadMessage.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #667eea, #764ba2);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 25px;
+                font-size: 14px;
+                z-index: 1000;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            `;
+            downloadMessage.textContent = `🚀 0/${songs.length}`;
+            document.body.appendChild(downloadMessage);
+
+            try {
+                const zip = new JSZip();
+                downloadQueue = [...songs];
+                totalFiles = songs.length;
+                totalDownloaded = 0;
+                
+                await processDownloadQueue(zip, (msg) => {
+                    downloadMessage.textContent = msg;
+                });
+                
+                const zipBlob = await zip.generateAsync({ 
+                    type: 'blob',
+                    compression: 'DEFLATE',
+                    compressionOptions: { level: 3 }
+                });
+                
+                const zipFilename = `${folderName.replace(/[^a-zа-яё0-9]/gi, '_')}_${songs.length}.zip`;
+                saveAs(zipBlob, zipFilename);
+                downloadMessage.textContent = `✅ Готово!`;
+                setTimeout(() => downloadMessage.remove(), 2000);
+                
+            } catch (error) {
+                downloadMessage.remove();
+            }
+        }
+
+        // === ОПТИМИЗИРОВАННОЕ СКАНИРОВАНИЕ ===
+        const urlCache = new Map();
+        const MAX_CONCURRENT_SCAN = 25;
+        
+        let scanQueue = [];
+        let activeScan = 0;
+
+        async function queuedScanRequest(url) {
+            return new Promise((resolve, reject) => {
+                scanQueue.push({ url, resolve, reject });
+                processScanQueue();
+            });
+        }
+
+        async function processScanQueue() {
+            if (activeScan >= MAX_CONCURRENT_SCAN || scanQueue.length === 0) return;
+            activeScan++;
+            const { url, resolve, reject } = scanQueue.shift();
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                resolve(data);
+            } catch (error) {
+                reject(error);
+            } finally {
+                activeScan--;
+                processScanQueue();
+            }
+        }
+
+        async function getAllFolderItems(publicKey, folderPath = '') {
+            let allItems = [];
+            let offset = 0;
+            const limit = 100;
+            
+            try {
+                while (true) {
+                    let url = `https://cloud-api.yandex.net/v1/disk/public/resources?public_key=${publicKey}&limit=${limit}&offset=${offset}`;
+                    if (folderPath) url += `&path=${encodeURIComponent(folderPath)}`;
+                    
+                    const data = await queuedScanRequest(url);
+                    
+                    if (data._embedded?.items) {
+                        allItems = [...allItems, ...data._embedded.items];
+                        if (data._embedded.items.length < limit) break;
+                        offset += limit;
+                        progressMessage.textContent = `📁 ${allItems.length}`;
+                    } else break;
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+            }
+            return allItems;
+        }
+
+        async function getDownloadUrl(publicKey, path) {
+            const cacheKey = `${publicKey}_${path}`;
+            if (urlCache.has(cacheKey)) return urlCache.get(cacheKey);
+            
+            const url = `https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key=${publicKey}&path=${encodeURIComponent(path)}`;
+            const data = await queuedScanRequest(url);
+            urlCache.set(cacheKey, data.href);
+            return data.href;
+        }
+
+        async function scanFolder(publicKey, folderPath = '', folderName = 'Корневая', depth = 0) {
+            progressMessage.style.display = 'block';
+            progressMessage.textContent = `📁 ${folderName}`;
+            
+            const items = await getAllFolderItems(publicKey, folderPath);
+            
+            const currentFolder = {
+                name: folderName,
+                path: folderPath,
+                songs: [],
+                subFolders: []
+            };
+            
+            const subFolders = items.filter(i => i.type === 'dir');
+            const mp3Files = items.filter(i => i.type === 'file' && i.name.toLowerCase().endsWith('.mp3'));
+            
+            await Promise.all(subFolders.map(async (sub) => {
+                const subData = await scanFolder(publicKey, sub.path, sub.name, depth + 1);
+                if (subData.songs.length || subData.subFolders.length) {
+                    currentFolder.subFolders.push(subData);
+                }
+            }));
+            
+            await Promise.all(mp3Files.map(async (mp3) => {
+                try {
+                    const url = await getDownloadUrl(publicKey, mp3.path);
+                    let name = mp3.name.replace(/\.mp3$/i, '');
+                    let artist = folderName === 'Корневая' ? 'Неизвестен' : folderName;
+                    
+                    if (name.includes(' - ')) {
+                        const parts = name.split(' - ');
+                        artist = parts[0].trim();
+                        name = parts[1].trim();
+                    }
+                    
+                    currentFolder.songs.push({
+                        name, artist, url,
+                        folder: folderName,
+                        originalName: mp3.name
+                    });
+                    allTracks.push(currentFolder.songs[currentFolder.songs.length - 1]);
+                    statsEl.innerHTML = `<span>⚡ ${allTracks.length}</span>`;
+                } catch (e) {}
+            }));
+            
+            return currentFolder;
+        }
+
+        function renderFolder(folder, container) {
+            if (!folder.songs.length && !folder.subFolders.length) return;
+            
+            const section = document.createElement('div');
+            section.className = 'folder-section';
+            
+            const header = document.createElement('div');
+            header.className = 'folder-header collapsed';
+            header.innerHTML = `
+                <span>
+                    📁 ${folder.name}
+                    ${folder.songs.length ? `<span class="folder-count">${folder.songs.length}</span>` : ''}
+                    ${folder.songs.length ? `<button class="folder-download">📦 Скачать</button>` : ''}
+                </span>
+                <span class="arrow">▼</span>
+            `;
+            
+            const content = document.createElement('div');
+            content.className = 'folder-content';
+            content.style.display = 'none';
+            
+            if (folder.songs.length) {
+                const list = document.createElement('ul');
+                list.className = 'folder-songs';
+                
+                folder.songs.forEach(song => {
+                    const idx = allTracks.findIndex(t => t.name === song.name && t.folder === song.folder);
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div class="song-info">
+                            <span class="song-name">${song.name}</span>
+                            <span class="song-artist">${song.artist}</span>
+                        </div>
+                        <button class="download-btn">⬇️</button>
+                    `;
+                    
+                    li.querySelector('.song-info').onclick = (e) => {
+                        e.stopPropagation();
+                        playTrack(idx);
+                    };
+                    
+                    li.querySelector('.download-btn').onclick = (e) => {
+                        e.stopPropagation();
+                        downloadTrack(song.url, song.originalName || `${song.name}.mp3`);
+                    };
+                    
+                    if (idx === currentTrack) li.classList.add('active');
+                    list.appendChild(li);
+                });
+                content.appendChild(list);
+            }
+            
+            folder.subFolders.forEach(sub => renderFolder(sub, content));
+            
+            header.querySelector('.folder-download')?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                downloadFolderAsZip(folder.songs, folder.name);
+            });
+            
+            header.addEventListener('click', (e) => {
+                if (e.target.classList.contains('folder-download')) return;
+                header.classList.toggle('collapsed');
+                content.style.display = content.style.display === 'none' ? 'block' : 'none';
+            });
+            
+            section.appendChild(header);
+            section.appendChild(content);
+            container.appendChild(section);
+        }
+
+        async function loadFromUrl() {
+            const url = folderUrlInput.value.trim() || "https://disk.yandex.ru/d/FnqHGrznQ0Ymyw";
+            
+            try {
+                allTracks = [];
+                currentTrack = 0;
+                isPlaying = false;
+                isShuffle = false;
+                isRepeat = false;
+                playBtn.textContent = '▶️';
+                shuffleBtn.style.color = '#666';
+                repeatBtn.style.color = '#666';
+                foldersContainer.innerHTML = '';
+                urlCache.clear();
+                
+                loadingMessage.style.display = 'block';
+                progressMessage.style.display = 'none';
+                errorMessage.style.display = 'none';
+                loadBtn.disabled = true;
+                
+                trackNameEl.textContent = 'Загрузка...';
+                trackArtistEl.innerHTML = 'Сканируем ⚡';
+                statsEl.innerHTML = '<span>0</span>';
+                
+                const root = await scanFolder(url, '', 'Корневая', 0);
+                
+                if (!allTracks.length) throw new Error('Нет MP3');
+                
+                loadingMessage.style.display = 'none';
+                progressMessage.style.display = 'none';
+                renderFolder(root, foldersContainer);
+                statsEl.innerHTML = `<span>⚡ ${allTracks.length}</span>`;
+                
+                if (allTracks.length) {
+                    loadTrack(0);
+                    updateShuffleOrder();
+                }
+                
+            } catch (error) {
+                loadingMessage.style.display = 'none';
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = 'Ошибка: ' + error.message;
+            } finally {
+                loadBtn.disabled = false;
+            }
+        }
+
+        function loadTrack(index) {
+            if (!allTracks.length) return;
+            currentTrack = index;
+            const t = allTracks[index];
+            trackNameEl.textContent = t.name;
+            trackArtistEl.innerHTML = `${t.artist} <span>📁 ${t.folder}</span>`;
+            audioPlayer.src = t.url;
+            
+            document.querySelectorAll('.folder-songs li').forEach(li => li.classList.remove('active'));
+            setTimeout(() => {
+                const items = document.querySelectorAll('.folder-songs li');
+                if (items[index]) items[index].classList.add('active');
+            }, 100);
+            
+            if (isPlaying) audioPlayer.play().catch(() => {});
+        }
+
+        function togglePlay() {
+            if (!allTracks.length) return;
+            if (isPlaying) {
+                audioPlayer.pause();
+                playBtn.textContent = '▶️';
+            } else {
+                audioPlayer.play().catch(() => {});
+                playBtn.textContent = '⏸️';
+            }
+            isPlaying = !isPlaying;
+        }
+
+        function nextTrack() {
+            if (!allTracks.length) return;
+            const next = getNextTrackIndex();
+            if (next !== currentTrack || isRepeat) {
+                loadTrack(next);
+            }
+        }
+
+        function prevTrack() {
+            if (!allTracks.length) return;
+            const prev = getPrevTrackIndex();
+            loadTrack(prev);
+        }
+
+        function playTrack(index) {
+            loadTrack(index);
+            audioPlayer.play().catch(() => {});
+            playBtn.textContent = '⏸️';
+            isPlaying = true;
+        }
+
+        function downloadTrack(url, filename) {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Обработчики
+        expandAllBtn?.addEventListener('click', () => {
+            document.querySelectorAll('.folder-header').forEach(h => {
+                h.classList.remove('collapsed');
+                h.nextElementSibling.style.display = 'block';
+            });
+        });
+
+        collapseAllBtn?.addEventListener('click', () => {
+            document.querySelectorAll('.folder-header').forEach(h => {
+                h.classList.add('collapsed');
+                h.nextElementSibling.style.display = 'none';
+            });
+        });
+
+        playBtn.addEventListener('click', togglePlay);
+        prevBtn.addEventListener('click', prevTrack);
+        nextBtn.addEventListener('click', nextTrack);
+        
+        audioPlayer.addEventListener('timeupdate', updateProgress);
+        audioPlayer.addEventListener('loadedmetadata', () => {
+            durationSpan.textContent = formatTime(audioPlayer.duration);
+        });
+        audioPlayer.addEventListener('ended', () => {
+            if (isRepeat) {
+                audioPlayer.currentTime = 0;
+                audioPlayer.play();
+            } else {
+                nextTrack();
+            }
+        });
+        audioPlayer.addEventListener('volumechange', updateVolume);
+
+        loadBtn.addEventListener('click', loadFromUrl);
+        folderUrlInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') loadFromUrl();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                togglePlay();
+            }
+        });
+
+        // Загружаем пример
+        window.addEventListener('load', () => {
+            folderUrlInput.value = 'https://disk.yandex.ru/d/FnqHGrznQ0Ymyw';
+            setTimeout(loadFromUrl, 1000);
+        });
+    </script>
+</body>
+</html>
