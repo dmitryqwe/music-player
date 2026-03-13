@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Музыкальный плеер</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .player-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 600px;
+            overflow: hidden;
+        }
+
+        .player-header {
+            background: linear-gradient(45deg, #4a90e2, #6c5ce7);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .player-header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .player-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .now-playing {
+            padding: 30px 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .track-info {
+            margin-bottom: 20px;
+        }
+
+        .track-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .track-artist {
+            font-size: 16px;
+            color: #666;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s, transform 0.2s;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .control-btn:hover {
+            color: #4a90e2;
+            transform: scale(1.1);
+        }
+
+        .control-btn.play-btn {
+            background: linear-gradient(45deg, #4a90e2, #6c5ce7);
+            color: white;
+            width: 60px;
+            height: 60px;
+            font-size: 28px;
+            box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
+        }
+
+        .playlist {
+            background: #f8f9fa;
+            padding: 20px;
+            border-top: 1px solid #eee;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .playlist h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 18px;
+            position: sticky;
+            top: 0;
+            background: #f8f9fa;
+            padding: 10px 0;
+        }
+
+        .folder-section {
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .folder-header {
+            background: linear-gradient(45deg, #4a90e2, #6c5ce7);
+            color: white;
+            padding: 10px 15px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .folder-header:hover {
+            opacity: 0.9;
+        }
+
+        .folder-songs {
+            list-style: none;
+            padding: 5px 0;
+        }
+
+        .folder-songs li {
+            padding: 10px 15px;
+            margin: 2px 5px;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            border: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .folder-songs li:hover {
+            background: #f0f0f0;
+            transform: translateX(3px);
+            border-color: #4a90e2;
+        }
+
+        .folder-songs li.active {
+            background: linear-gradient(45deg, #4a90e2, #6c5ce7);
+            color: white;
+            border: none;
+        }
+
+        .song-name {
+            font-weight: 500;
+        }
+
+        .song-artist {
+            font-size: 12px;
+            color: #999;
+            margin-left: 10px;
+        }
+
+        .folder-songs li.active .song-artist {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .error {
+            text-align: center;
+            padding: 20px;
+            color: #e74c3c;
+            background: #fde8e8;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+
+        .folder-count {
+            font-size: 12px;
+            background: rgba(255,255,255,0.2);
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .arrow {
+            font-size: 14px;
+            transition: transform 0.3s;
+        }
+
+        .folder-header.collapsed .arrow {
+            transform: rotate(-90deg);
+        }
+
+        .stats {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container">
+        <div class="player-header">
+            <h1>🎵 Music Player</h1>
+            <p>Музыка с Яндекс.Диска (все папки)</p>
+        </div>
+
+        <div class="now-playing">
+            <div class="track-info">
+                <div class="track-name" id="currentTrack">Загрузка...</div>
+                <div class="track-artist" id="currentArtist">Подождите немного</div>
+            </div>
+
+            <div class="controls">
+                <button class="control-btn" id="prevBtn" title="Предыдущий трек">⏮️</button>
+                <button class="control-btn play-btn" id="playBtn" title="Воспроизвести">▶️</button>
+                <button class="control-btn" id="nextBtn" title="Следующий трек">⏭️</button>
+            </div>
+        </div>
+
+        <div class="playlist">
+            <h3>📋 Плейлист по папкам</h3>
+            <div id="stats" class="stats"></div>
+            <div id="loadingMessage" class="loading">🔍 Сканируем все папки на Яндекс.Диске...</div>
+            <div id="progressMessage" class="loading" style="display: none;"></div>
+            <div id="errorMessage" class="error" style="display: none;"></div>
+            <div id="foldersContainer"></div>
+        </div>
+
+        <audio id="audioPlayer" preload="auto"></audio>
+    </div>
+
+    <script>
+        // Твоя публичная ссылка на папку Яндекс.Диска
+        const FOLDER_URL = "https://disk.yandex.ru/d/5ThDxTgb1LB7nA";
+        
+        // Переменные плеера
+        let allTracks = [];
+        let foldersData = [];
+        let currentTrack = 0;
+        let isPlaying = false;
+        
+        // Элементы DOM
+        const audioPlayer = document.getElementById('audioPlayer');
+        const trackNameEl = document.getElementById('currentTrack');
+        const trackArtistEl = document.getElementById('currentArtist');
+        const playBtn = document.getElementById('playBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const foldersContainer = document.getElementById('foldersContainer');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const progressMessage = document.getElementById('progressMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        const statsEl = document.getElementById('stats');
+
+        // === ФУНКЦИЯ ДЛЯ ПОЛУЧЕНИЯ ЭЛЕМЕНТОВ ИЗ ПАПКИ ===
+        async function getFolderItems(publicKey, path = '', offset = 0) {
+            const limit = 100;
+            let allItems = [];
+            
+            try {
+                while (true) {
+                    let url = `https://cloud-api.yandex.net/v1/disk/public/resources?public_key=${publicKey}&limit=${limit}&offset=${offset}`;
+                    if (path) {
+                        url += `&path=${encodeURIComponent(path)}`;
+                    }
+                    
+                    console.log(`📖 Загружаем страницу ${offset/limit + 1}`, path || 'корень');
+                    
+                    const response = await fetch(url);
+                    
+                    if (!response.ok) {
+                        console.warn('Ошибка загрузки:', path);
+                        break;
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data._embedded && data._embedded.items) {
+                        allItems = [...allItems, ...data._embedded.items];
+                        
+                        if (data._embedded.items.length < limit) {
+                            break;
+                        }
+                        
+                        offset += limit;
+                    } else {
+                        break;
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+            }
+            
+            return allItems;
+        }
+
+        // === РЕКУРСИВНАЯ ФУНКЦИЯ ДЛЯ СКАНИРОВАНИЯ ВСЕХ ПАПОК ===
+        async function scanFolder(publicKey, folderPath = '', folderName = 'Корневая папка', depth = 0) {
+            console.log(`${'  '.repeat(depth)}📁 Сканируем: ${folderName}`);
+            
+            progressMessage.style.display = 'block';
+            progressMessage.textContent = `📁 Сканируем: ${folderName} (глубина ${depth})`;
+            
+            const items = await getFolderItems(publicKey, folderPath);
+            
+            const currentFolder = {
+                name: folderName,
+                path: folderPath,
+                songs: [],
+                subFolders: [],
+                depth: depth
+            };
+            
+            // Сначала собираем все папки
+            const folderPromises = [];
+            
+            for (const item of items) {
+                if (item.type === 'dir') {
+                    console.log(`${'  '.repeat(depth)}📂 Нашли подпапку: ${item.name}`);
+                    
+                    // Рекурсивно сканируем подпапку
+                    const subFolderPromise = scanFolder(publicKey, item.path, item.name, depth + 1)
+                        .then(subFolder => {
+                            currentFolder.subFolders.push(subFolder);
+                        });
+                    
+                    folderPromises.push(subFolderPromise);
+                }
+            }
+            
+            // Ждем пока просканируются все подпапки
+            await Promise.all(folderPromises);
+            
+            // Теперь собираем MP3 файлы в текущей папке
+            for (const item of items) {
+                if (item.type === 'file' && item.name.toLowerCase().endsWith('.mp3')) {
+                    console.log(`${'  '.repeat(depth)}🎵 Нашли MP3: ${item.name}`);
+                    
+                    try {
+                        const downloadUrl = `https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key=${publicKey}&path=${encodeURIComponent(item.path)}`;
+                        const downloadResponse = await fetch(downloadUrl);
+                        const downloadData = await downloadResponse.json();
+                        
+                        let songName = item.name.replace(/\.mp3$/i, '');
+                        let artist = folderName === 'Корневая папка' ? 'Неизвестен' : folderName;
+                        
+                        if (songName.includes(' - ')) {
+                            const parts = songName.split(' - ');
+                            artist = parts[0].trim();
+                            songName = parts[1].trim();
+                        }
+                        
+                        const track = {
+                            name: songName,
+                            artist: artist,
+                            url: downloadData.href,
+                            folder: folderName,
+                            originalName: item.name,
+                            fullPath: item.path
+                        };
+                        
+                        currentFolder.songs.push(track);
+                        allTracks.push(track);
+                        
+                        // Обновляем статистику
+                        statsEl.textContent = `📊 Найдено папок: ${foldersData.length + 1}, треков: ${allTracks.length}`;
+                        
+                    } catch (dlError) {
+                        console.error('Ошибка получения ссылки:', item.name, dlError);
+                    }
+                }
+            }
+            
+            return currentFolder;
+        }
+
+        // === ФУНКЦИЯ ДЛЯ ОТОБРАЖЕНИЯ ПАПОК РЕКУРСИВНО ===
+        function renderFolder(folder, container) {
+            if (folder.songs.length === 0 && folder.subFolders.length === 0) return;
+            
+            const folderSection = document.createElement('div');
+            folderSection.className = 'folder-section';
+            
+            // Заголовок папки
+            const folderHeader = document.createElement('div');
+            folderHeader.className = 'folder-header';
+            
+            let title = `📁 ${folder.name}`;
+            if (folder.songs.length > 0) {
+                title += ` <span class="folder-count">${folder.songs.length} треков</span>`;
+            }
+            
+            folderHeader.innerHTML = `
+                <span>${title}</span>
+                <span class="arrow">▼</span>
+            `;
+            
+            // Контейнер для содержимого папки
+            const contentContainer = document.createElement('div');
+            contentContainer.className = 'folder-content';
+            
+            // Сначала добавляем песни текущей папки
+            if (folder.songs.length > 0) {
+                const songsList = document.createElement('ul');
+                songsList.className = 'folder-songs';
+                
+                folder.songs.forEach(song => {
+                    const globalIndex = allTracks.findIndex(t => 
+                        t.name === song.name && t.artist === song.artist && t.folder === song.folder
+                    );
+                    
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <span>
+                            <span class="song-name">${song.name}</span>
+                            <span class="song-artist">${song.artist}</span>
+                        </span>
+                        <span>🎵</span>
+                    `;
+                    
+                    li.onclick = () => playTrack(globalIndex);
+                    
+                    if (globalIndex === currentTrack) {
+                        li.classList.add('active');
+                    }
+                    
+                    songsList.appendChild(li);
+                });
+                
+                contentContainer.appendChild(songsList);
+            }
+            
+            // Потом добавляем подпапки
+            if (folder.subFolders.length > 0) {
+                const subFoldersContainer = document.createElement('div');
+                subFoldersContainer.className = 'subfolders';
+                
+                folder.subFolders.forEach(subFolder => {
+                    renderFolder(subFolder, subFoldersContainer);
+                });
+                
+                contentContainer.appendChild(subFoldersContainer);
+            }
+            
+            // Обработчик сворачивания/разворачивания
+            folderHeader.onclick = () => {
+                folderHeader.classList.toggle('collapsed');
+                if (contentContainer.style.display === 'none') {
+                    contentContainer.style.display = 'block';
+                } else {
+                    contentContainer.style.display = 'none';
+                }
+            };
+            
+            folderSection.appendChild(folderHeader);
+            folderSection.appendChild(contentContainer);
+            container.appendChild(folderSection);
+        }
+
+        // === ГЛАВНАЯ ФУНКЦИЯ ЗАГРУЗКИ ===
+        async function loadTracksFromYandex() {
+            try {
+                loadingMessage.style.display = 'block';
+                progressMessage.style.display = 'none';
+                errorMessage.style.display = 'none';
+                foldersContainer.innerHTML = '';
+                allTracks = [];
+                
+                const publicKey = FOLDER_URL;
+                
+                // Начинаем сканирование с корневой папки
+                const rootFolder = await scanFolder(publicKey, '', 'Корневая папка', 0);
+                
+                if (allTracks.length === 0) {
+                    throw new Error('Не найдено MP3 файлов');
+                }
+                
+                // Сортируем подпапки по имени
+                function sortFolder(folder) {
+                    folder.subFolders.sort((a, b) => a.name.localeCompare(b.name));
+                    folder.subFolders.forEach(sortFolder);
+                }
+                sortFolder(rootFolder);
+                
+                loadingMessage.style.display = 'none';
+                progressMessage.style.display = 'none';
+                
+                // Отображаем все папки
+                renderFolder(rootFolder, foldersContainer);
+                
+                statsEl.textContent = `✅ Найдено папок: ${countFolders(rootFolder)}, треков: ${allTracks.length}`;
+                
+                // Загружаем первый трек
+                if (allTracks.length > 0) {
+                    loadTrack(0);
+                }
+                
+            } catch (error) {
+                console.error('❌ Ошибка:', error);
+                loadingMessage.style.display = 'none';
+                progressMessage.style.display = 'none';
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = 'Ошибка: ' + error.message;
+            }
+        }
+
+        // Подсчет количества папок
+        function countFolders(folder) {
+            let count = 1;
+            for (const sub of folder.subFolders) {
+                count += countFolders(sub);
+            }
+            return count;
+        }
+
+        // === ЗАГРУЗКА ТРЕКА ===
+        function loadTrack(index) {
+            if (allTracks.length === 0) return;
+            
+            currentTrack = index;
+            const track = allTracks[index];
+            
+            trackNameEl.textContent = track.name;
+            trackArtistEl.textContent = track.artist + ' 📁 ' + track.folder;
+            audioPlayer.src = track.url;
+            
+            // Обновляем активный класс
+            document.querySelectorAll('.folder-songs li').forEach(li => {
+                li.classList.remove('active');
+            });
+            
+            setTimeout(() => {
+                const items = document.querySelectorAll('.folder-songs li');
+                if (items[index]) {
+                    items[index].classList.add('active');
+                    items[index].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }, 100);
+            
+            if (isPlaying) {
+                audioPlayer.play().catch(error => {
+                    console.error('Ошибка воспроизведения:', error);
+                });
+            }
+        }
+
+        // === PLAY/PAUSE ===
+        function togglePlay() {
+            if (allTracks.length === 0) return;
+            
+            if (isPlaying) {
+                audioPlayer.pause();
+                playBtn.textContent = '▶️';
+                isPlaying = false;
+            } else {
+                audioPlayer.play().catch(error => {
+                    console.error('Ошибка:', error);
+                });
+                playBtn.textContent = '⏸️';
+                isPlaying = true;
+            }
+        }
+
+        // === СЛЕДУЮЩИЙ ТРЕК ===
+        function nextTrack() {
+            if (allTracks.length === 0) return;
+            
+            let next = currentTrack + 1;
+            if (next >= allTracks.length) {
+                next = 0;
+            }
+            loadTrack(next);
+        }
+
+        // === ПРЕДЫДУЩИЙ ТРЕК ===
+        function prevTrack() {
+            if (allTracks.length === 0) return;
+            
+            let prev = currentTrack - 1;
+            if (prev < 0) {
+                prev = allTracks.length - 1;
+            }
+            loadTrack(prev);
+        }
+
+        // === ВЫБОР ТРЕКА ===
+        function playTrack(index) {
+            if (allTracks.length === 0) return;
+            
+            loadTrack(index);
+            audioPlayer.play().catch(error => {
+                console.error('Ошибка:', error);
+            });
+            playBtn.textContent = '⏸️';
+            isPlaying = true;
+        }
+
+        // === ОБРАБОТЧИКИ ===
+        playBtn.addEventListener('click', togglePlay);
+        prevBtn.addEventListener('click', prevTrack);
+        nextBtn.addEventListener('click', nextTrack);
+        
+        audioPlayer.addEventListener('ended', () => {
+            nextTrack();
+        });
+        
+        audioPlayer.addEventListener('error', (e) => {
+            console.error('Ошибка аудио:', e);
+        });
+
+        // === ЗАПУСК ===
+        loadTracksFromYandex();
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                togglePlay();
+            }
+        });
+    </script>
+</body>
+</html>
