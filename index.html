@@ -1,0 +1,1673 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Music Player | Премиум дизайн</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            position: relative;
+            overflow: hidden;
+            background: #0a0a1f;
+        }
+
+        /* Анимированный фон с градиентом и частицами */
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -2;
+        }
+
+        .gradient-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(125deg, #0a0a1f 0%, #1a1a3a 25%, #2a1a4a 50%, #1a1a3a 75%, #0a0a1f 100%);
+            background-size: 400% 400%;
+            animation: gradientFlow 20s ease infinite;
+        }
+
+        @keyframes gradientFlow {
+            0% { background-position: 0% 0%; }
+            50% { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(2px 2px at 10% 20%, rgba(255, 255, 255, 0.3) 0%, transparent 100%),
+                radial-gradient(3px 3px at 30% 50%, rgba(200, 150, 255, 0.3) 0%, transparent 100%),
+                radial-gradient(2px 2px at 50% 80%, rgba(150, 200, 255, 0.3) 0%, transparent 100%),
+                radial-gradient(4px 4px at 70% 30%, rgba(255, 150, 200, 0.3) 0%, transparent 100%),
+                radial-gradient(2px 2px at 90% 60%, rgba(100, 200, 255, 0.3) 0%, transparent 100%),
+                radial-gradient(3px 3px at 20% 90%, rgba(200, 100, 255, 0.3) 0%, transparent 100%),
+                radial-gradient(2px 2px at 80% 70%, rgba(150, 150, 255, 0.3) 0%, transparent 100%),
+                radial-gradient(4px 4px at 40% 30%, rgba(255, 100, 150, 0.3) 0%, transparent 100%);
+            background-size: 200px 200px;
+            animation: particlesFloat 40s linear infinite;
+            opacity: 0.5;
+        }
+
+        @keyframes particlesFloat {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-100px) rotate(5deg); }
+        }
+
+        .music-notes {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        .note {
+            position: absolute;
+            color: rgba(255, 255, 255, 0.15);
+            font-size: 40px;
+            user-select: none;
+            pointer-events: none;
+            animation: floatNote linear infinite;
+            text-shadow: 0 0 20px rgba(150, 100, 255, 0.3);
+        }
+
+        .note:nth-child(1) { left: 5%; animation-duration: 20s; animation-delay: 0s; }
+        .note:nth-child(2) { left: 15%; animation-duration: 25s; animation-delay: 2s; }
+        .note:nth-child(3) { left: 25%; animation-duration: 22s; animation-delay: 4s; }
+        .note:nth-child(4) { left: 35%; animation-duration: 28s; animation-delay: 1s; }
+        .note:nth-child(5) { left: 45%; animation-duration: 24s; animation-delay: 3s; }
+        .note:nth-child(6) { left: 55%; animation-duration: 26s; animation-delay: 5s; }
+        .note:nth-child(7) { left: 65%; animation-duration: 23s; animation-delay: 0.5s; }
+        .note:nth-child(8) { left: 75%; animation-duration: 27s; animation-delay: 2.5s; }
+        .note:nth-child(9) { left: 85%; animation-duration: 21s; animation-delay: 4.5s; }
+        .note:nth-child(10) { left: 95%; animation-duration: 29s; animation-delay: 1.5s; }
+
+        @keyframes floatNote {
+            from {
+                transform: translateY(100vh) rotate(0deg) scale(1);
+                opacity: 0;
+            }
+            20% {
+                opacity: 0.4;
+                transform: translateY(70vh) rotate(72deg) scale(1.2);
+            }
+            40% {
+                opacity: 0.5;
+                transform: translateY(50vh) rotate(144deg) scale(1.1);
+            }
+            60% {
+                opacity: 0.4;
+                transform: translateY(30vh) rotate(216deg) scale(1.3);
+            }
+            80% {
+                opacity: 0.3;
+                transform: translateY(10vh) rotate(288deg) scale(1.2);
+            }
+            to {
+                transform: translateY(-20vh) rotate(360deg) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* Модальное окно приветствия */
+        .welcome-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .welcome-modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 40px;
+            padding: 40px;
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+            transform: scale(0.8) translateY(20px);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .welcome-modal.show .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-icon {
+            font-size: 70px;
+            margin-bottom: 20px;
+            animation: iconPulse 2s infinite;
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .modal-content h2 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #4a4a6a, #1a1a3a);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal-content p {
+            color: #4a5568;
+            margin-bottom: 25px;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .feature {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+
+        .feature:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .feature-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .feature span {
+            font-size: 13px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .modal-btn {
+            background: linear-gradient(135deg, #4a4a6a, #1a1a3a);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 20px rgba(74, 74, 106, 0.3);
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(74, 74, 106, 0.4);
+        }
+
+        .modal-btn:active {
+            transform: translateY(0);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #a0aec0;
+            transition: color 0.3s;
+        }
+
+        .close-btn:hover {
+            color: #4a4a6a;
+        }
+
+        .player-container {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            border-radius: 40px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            max-width: 650px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+            position: relative;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: transform 0.3s;
+        }
+
+        .player-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+        }
+
+        .player-header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .player-header::before {
+            content: '♪ ♫ ♪ ♫ ♪ ♩ ♪ ♫ ♩';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-5deg);
+            font-size: 90px;
+            opacity: 0.1;
+            white-space: nowrap;
+            width: 100%;
+            text-align: center;
+            letter-spacing: 15px;
+            animation: headerNotes 20s linear infinite;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        @keyframes headerNotes {
+            from { transform: translate(-50%, -50%) rotate(-5deg) translateX(0); }
+            to { transform: translate(-50%, -50%) rotate(-5deg) translateX(-100px); }
+        }
+
+        .player-header h1 {
+            font-size: 32px;
+            margin-bottom: 5px;
+            font-weight: 800;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 2px 15px rgba(0,0,0,0.5);
+        }
+
+        .player-header p {
+            opacity: 0.9;
+            font-size: 14px;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 1px 5px rgba(0,0,0,0.5);
+        }
+
+        .url-input-section {
+            padding: 20px;
+            background: white;
+            border-bottom: 1px solid #f0f0f0;
+            flex-shrink: 0;
+        }
+
+        .url-input-section label {
+            display: block;
+            margin-bottom: 10px;
+            color: #2d3748;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .url-input-container {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        #folderUrl {
+            flex: 1;
+            min-width: 250px;
+            padding: 15px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 25px;
+            font-size: 14px;
+            transition: all 0.3s;
+            background: #f8fafc;
+            font-family: 'Inter', sans-serif;
+        }
+
+        #folderUrl:focus {
+            outline: none;
+            border-color: #4a4a6a;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(74, 74, 106, 0.1);
+        }
+
+        #loadBtn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            background: linear-gradient(135deg, #4a4a6a, #1a1a3a);
+            color: white;
+            white-space: nowrap;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(74, 74, 106, 0.3);
+        }
+
+        #loadBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(74, 74, 106, 0.4);
+        }
+
+        #loadBtn:active {
+            transform: translateY(0);
+        }
+
+        #loadBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .example-link {
+            margin-top: 12px;
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .example-link a {
+            color: #4a4a6a;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .example-link a:hover {
+            color: #1a1a3a;
+            text-decoration: underline;
+        }
+
+        .now-playing {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+            background: linear-gradient(135deg, #ffffff, #fafafa);
+            flex-shrink: 0;
+        }
+
+        .track-info {
+            margin-bottom: 15px;
+        }
+
+        .track-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+        }
+
+        .track-artist {
+            font-size: 16px;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .track-artist span {
+            background: #f1f5f9;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 12px;
+            color: #4a4a6a;
+            font-weight: 600;
+        }
+
+        .progress-container {
+            padding: 10px 20px 15px;
+            background: white;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            position: relative;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4a4a6a, #1a1a3a);
+            border-radius: 10px;
+            width: 0%;
+            position: relative;
+            transition: width 0.1s linear;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            background: white;
+            border: 3px solid #4a4a6a;
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .progress-bar:hover .progress-fill::after {
+            opacity: 1;
+        }
+
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 20px;
+            background: white;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .volume-icon {
+            font-size: 22px;
+            color: #4a4a6a;
+            width: 30px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .volume-slider {
+            flex: 1;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .volume-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4a4a6a, #1a1a3a);
+            border-radius: 10px;
+            width: 100%;
+            position: relative;
+        }
+
+        .volume-slider:hover .volume-fill::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 14px;
+            height: 14px;
+            background: white;
+            border: 2px solid #4a4a6a;
+            border-radius: 50%;
+        }
+
+        .volume-percent {
+            font-size: 13px;
+            color: #64748b;
+            min-width: 40px;
+            text-align: right;
+            font-weight: 500;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+            padding: 15px 20px;
+            background: white;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #64748b;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .control-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s;
+        }
+
+        .control-btn:hover::before {
+            opacity: 0.1;
+            transform: scale(1.2);
+        }
+
+        .control-btn:hover {
+            color: #4a4a6a;
+            transform: scale(1.1);
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .control-btn.play-btn {
+            background: linear-gradient(135deg, #4a4a6a, #1a1a3a);
+            color: white;
+            width: 65px;
+            height: 65px;
+            font-size: 32px;
+            box-shadow: 0 10px 20px rgba(74, 74, 106, 0.4);
+        }
+
+        .control-btn.play-btn:hover {
+            transform: scale(1.15);
+            box-shadow: 0 15px 30px rgba(74, 74, 106, 0.6);
+        }
+
+        .control-btn.play-btn::before {
+            display: none;
+        }
+
+        .control-btn.active {
+            color: #4a4a6a;
+        }
+
+        .playlist {
+            background: #ffffff;
+            padding: 20px;
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .playlist-header {
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .playlist-header h3 {
+            color: #1e293b;
+            font-size: 18px;
+            font-weight: 600;
+            padding-bottom: 12px;
+            border-bottom: 3px solid #4a4a6a;
+        }
+
+        .stats {
+            font-size: 13px;
+            color: #64748b;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats span {
+            background: #f1f5f9;
+            padding: 4px 12px;
+            border-radius: 30px;
+            color: #4a4a6a;
+            font-weight: 600;
+        }
+
+        #foldersContainer {
+            overflow-y: auto;
+            padding-right: 8px;
+            flex: 1;
+        }
+
+        .folder-section {
+            margin-bottom: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            overflow: hidden;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .folder-section:hover {
+            border-color: #4a4a6a;
+            box-shadow: 0 8px 20px rgba(74, 74, 106, 0.15);
+        }
+
+        .folder-header {
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            color: #1e293b;
+            padding: 15px 18px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .folder-header:hover {
+            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+            padding-left: 22px;
+        }
+
+        .folder-header.collapsed .arrow {
+            transform: rotate(-90deg);
+        }
+
+        .folder-count {
+            font-size: 12px;
+            background: linear-gradient(135deg, #4a4a6a, #1a1a3a);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 30px;
+            margin-left: 10px;
+            font-weight: 500;
+        }
+
+        .arrow {
+            font-size: 14px;
+            color: #4a4a6a;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .folder-download {
+            background: linear-gradient(135deg, #4a4a6a, #1a1a3a);
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 25px;
+            margin-left: 10px;
+            transition: all 0.3s;
+        }
+
+        .folder-download:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(74, 74, 106, 0.3);
+        }
+
+        .folder-songs {
+            list-style: none;
+            padding: 12px;
+            background: #ffffff;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .folder-songs li {
+            padding: 12px 16px;
+            margin: 6px 0;
+            background: #f8fafc;
+            border-radius: 16px;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .folder-songs li:hover {
+            background: #ffffff;
+            border-color: #4a4a6a;
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(74, 74, 106, 0.15);
+        }
+
+        .folder-songs li.active {
+            background: linear-gradient(135deg, #4a4a6a, #1a1a3a);
+            color: white;
+            border: none;
+            box-shadow: 0 8px 20px rgba(74, 74, 106, 0.4);
+        }
+
+        .song-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .song-name {
+            font-weight: 600;
+        }
+
+        .song-artist {
+            font-size: 12px;
+            color: #94a3b8;
+            background: #e2e8f0;
+            padding: 2px 10px;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+
+        .folder-songs li.active .song-artist {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .download-btn {
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: #94a3b8;
+            padding: 6px 12px;
+            border-radius: 25px;
+            transition: all 0.3s;
+        }
+
+        .download-btn:hover {
+            color: #4a4a6a;
+            transform: scale(1.1);
+            background: #f1f5f9;
+        }
+
+        .folder-songs li.active .download-btn {
+            color: white;
+        }
+
+        .folder-songs li.active .download-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .loading, .error {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+            font-size: 15px;
+        }
+
+        .error {
+            color: #e53e3e;
+        }
+
+        /* Стили для скролла */
+        #foldersContainer::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #foldersContainer::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        #foldersContainer::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #4a4a6a, #1a1a3a);
+            border-radius: 10px;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 8px;
+            }
+
+            .player-container {
+                height: 98vh;
+                border-radius: 30px;
+            }
+
+            .player-header h1 {
+                font-size: 28px;
+            }
+
+            .url-input-container {
+                flex-direction: column;
+            }
+
+            #loadBtn {
+                width: 100%;
+            }
+
+            .controls {
+                gap: 15px;
+            }
+
+            .control-btn {
+                width: 45px;
+                height: 45px;
+                font-size: 24px;
+            }
+
+            .control-btn.play-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 28px;
+            }
+
+            .modal-content {
+                padding: 30px 20px;
+            }
+
+            .features {
+                gap: 10px;
+            }
+
+            .feature {
+                padding: 12px;
+            }
+
+            .feature-icon {
+                font-size: 20px;
+            }
+
+            .feature span {
+                font-size: 12px;
+            }
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body>
+    <!-- Анимированный фон -->
+    <div class="background">
+        <div class="gradient-bg"></div>
+        <div class="particles"></div>
+        <div class="music-notes">
+            <div class="note">♪</div>
+            <div class="note">♫</div>
+            <div class="note">♩</div>
+            <div class="note">♪</div>
+            <div class="note">♫</div>
+            <div class="note">♩</div>
+            <div class="note">♪</div>
+            <div class="note">♫</div>
+            <div class="note">♩</div>
+            <div class="note">♪</div>
+        </div>
+    </div>
+
+    <!-- Модальное окно приветствия -->
+    <div class="welcome-modal" id="welcomeModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeWelcomeModal()">&times;</button>
+            <div class="modal-icon">🎵</div>
+            <h2>Добро пожаловать!</h2>
+            <p>Откройте для себя мир музыки с нашим премиум-плеером</p>
+            
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">🚀</div>
+                    <span>Максимальная скорость</span>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔄</div>
+                    <span>Перемешка треков</span>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🔁</div>
+                    <span>Повтор</span>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📦</div>
+                    <span>Скачивание папок</span>
+                </div>
+            </div>
+
+            <button class="modal-btn" onclick="closeWelcomeModal()">Начать прослушивание</button>
+        </div>
+    </div>
+
+    <div class="player-container">
+        <div class="player-header">
+            <h1>🎵 Music Player</h1>
+            <p>Премиум качество звука</p>
+        </div>
+
+        <div class="url-input-section">
+            <label for="folderUrl">Ссылка на папку Яндекс.Диска:</label>
+            <div class="url-input-container">
+                <input type="url" id="folderUrl" placeholder="https://disk.yandex.ru/d/..." value="https://disk.yandex.ru/d/FnqHGrznQ0Ymyw">
+                <button id="loadBtn">🚀 Загрузить</button>
+            </div>
+            <div class="example-link">
+                Пример: <a href="#" onclick="setExampleUrl(); return false;">https://disk.yandex.ru/d/FnqHGrznQ0Ymyw</a>
+            </div>
+        </div>
+
+        <div class="now-playing">
+            <div class="track-info">
+                <div class="track-name" id="currentTrack">Выберите трек</div>
+                <div class="track-artist" id="currentArtist">
+                    Нажмите Загрузить
+                    <span>📁</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Плашка перемотки -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="time-info">
+                <span id="currentTime">0:00</span>
+                <span id="duration">0:00</span>
+            </div>
+        </div>
+
+        <!-- Регулятор громкости -->
+        <div class="volume-control">
+            <span class="volume-icon" id="volumeIcon">🔊</span>
+            <div class="volume-slider" id="volumeSlider">
+                <div class="volume-fill" id="volumeFill" style="width: 100%"></div>
+            </div>
+            <span class="volume-percent" id="volumePercent">100%</span>
+        </div>
+
+        <!-- Кнопки управления с перемешкой и повтором -->
+        <div class="controls">
+            <button class="control-btn" id="shuffleBtn" title="Перемешать">🔀</button>
+            <button class="control-btn" id="prevBtn">⏮️</button>
+            <button class="control-btn play-btn" id="playBtn">▶️</button>
+            <button class="control-btn" id="nextBtn">⏭️</button>
+            <button class="control-btn" id="repeatBtn" title="Повтор">🔁</button>
+        </div>
+
+        <div class="playlist">
+            <div class="playlist-header">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3>📋 Плейлист</h3>
+                    <div style="display: flex; gap: 8px;">
+                        <button id="expandAllBtn" style="background: #f1f5f9; border: none; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;">🔽 Все</button>
+                        <button id="collapseAllBtn" style="background: #f1f5f9; border: none; padding: 6px 12px; border-radius: 20px; font-size: 12px; cursor: pointer;">🔼 Все</button>
+                    </div>
+                </div>
+                <div id="stats" class="stats">
+                    <span>0 треков</span>
+                </div>
+            </div>
+            
+            <div id="loadingMessage" class="loading" style="display: none;">🔍 Сканируем папки...</div>
+            <div id="progressMessage" class="loading" style="display: none;"></div>
+            <div id="errorMessage" class="error" style="display: none;"></div>
+            <div id="foldersContainer"></div>
+        </div>
+
+        <audio id="audioPlayer" preload="auto"></audio>
+    </div>
+
+    <script>
+        // Переменные плеера
+        let allTracks = [];
+        let currentTrack = 0;
+        let isPlaying = false;
+        let isShuffle = false;
+        let isRepeat = false;
+        let shuffledOrder = [];
+        
+        // Элементы DOM
+        const audioPlayer = document.getElementById('audioPlayer');
+        const trackNameEl = document.getElementById('currentTrack');
+        const trackArtistEl = document.getElementById('currentArtist');
+        const playBtn = document.getElementById('playBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const shuffleBtn = document.getElementById('shuffleBtn');
+        const repeatBtn = document.getElementById('repeatBtn');
+        const foldersContainer = document.getElementById('foldersContainer');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const progressMessage = document.getElementById('progressMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        const statsEl = document.getElementById('stats');
+        const folderUrlInput = document.getElementById('folderUrl');
+        const loadBtn = document.getElementById('loadBtn');
+        const expandAllBtn = document.getElementById('expandAllBtn');
+        const collapseAllBtn = document.getElementById('collapseAllBtn');
+        
+        // Элементы для перемотки
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const currentTimeSpan = document.getElementById('currentTime');
+        const durationSpan = document.getElementById('duration');
+        
+        // Элементы для громкости
+        const volumeSlider = document.getElementById('volumeSlider');
+        const volumeFill = document.getElementById('volumeFill');
+        const volumeIcon = document.getElementById('volumeIcon');
+        const volumePercent = document.getElementById('volumePercent');
+
+        // Функция для закрытия модального окна
+        window.closeWelcomeModal = function() {
+            document.getElementById('welcomeModal').classList.remove('show');
+        };
+
+        // Показываем модальное окно при загрузке
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('welcomeModal').classList.add('show');
+            }, 500);
+        });
+
+        // Функция для установки примера ссылки
+        window.setExampleUrl = function() {
+            folderUrlInput.value = 'https://disk.yandex.ru/d/FnqHGrznQ0Ymyw';
+        };
+
+        // === ФУНКЦИИ ДЛЯ ПЕРЕМЕШКИ И ПОВТОРА ===
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function updateShuffleOrder() {
+            if (allTracks.length > 0) {
+                shuffledOrder = Array.from({ length: allTracks.length }, (_, i) => i);
+                shuffleArray(shuffledOrder);
+            }
+        }
+
+        function getNextTrackIndex() {
+            if (isShuffle) {
+                const currentPos = shuffledOrder.indexOf(currentTrack);
+                return shuffledOrder[(currentPos + 1) % shuffledOrder.length];
+            } else {
+                let next = currentTrack + 1;
+                if (next >= allTracks.length) {
+                    return isRepeat ? 0 : currentTrack;
+                }
+                return next;
+            }
+        }
+
+        function getPrevTrackIndex() {
+            if (isShuffle) {
+                const currentPos = shuffledOrder.indexOf(currentTrack);
+                return shuffledOrder[(currentPos - 1 + shuffledOrder.length) % shuffledOrder.length];
+            } else {
+                let prev = currentTrack - 1;
+                if (prev < 0) {
+                    return isRepeat ? allTracks.length - 1 : 0;
+                }
+                return prev;
+            }
+        }
+
+        // Обработчики для кнопок перемешки и повтора
+        shuffleBtn.addEventListener('click', () => {
+            isShuffle = !isShuffle;
+            shuffleBtn.style.color = isShuffle ? '#4a4a6a' : '#64748b';
+            shuffleBtn.style.transform = isShuffle ? 'scale(1.1)' : 'scale(1)';
+            if (isShuffle) {
+                updateShuffleOrder();
+            }
+        });
+
+        repeatBtn.addEventListener('click', () => {
+            isRepeat = !isRepeat;
+            repeatBtn.style.color = isRepeat ? '#4a4a6a' : '#64748b';
+            repeatBtn.style.transform = isRepeat ? 'scale(1.1)' : 'scale(1)';
+        });
+
+        // === ОБНОВЛЕНИЕ ПРОГРЕССА ===
+        function updateProgress() {
+            if (audioPlayer.duration) {
+                const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+                progressFill.style.width = percent + '%';
+                currentTimeSpan.textContent = formatTime(audioPlayer.currentTime);
+                durationSpan.textContent = formatTime(audioPlayer.duration);
+            }
+        }
+
+        // === ФОРМАТИРОВАНИЕ ВРЕМЕНИ ===
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // === ПЕРЕМОТКА ===
+        progressBar.addEventListener('click', (e) => {
+            const rect = progressBar.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audioPlayer.currentTime = percent * audioPlayer.duration;
+        });
+
+        // === РЕГУЛЯТОР ГРОМКОСТИ ===
+        function updateVolume() {
+            const percent = audioPlayer.volume * 100;
+            volumeFill.style.width = percent + '%';
+            volumePercent.textContent = Math.round(percent) + '%';
+            
+            if (percent === 0) {
+                volumeIcon.textContent = '🔇';
+            } else if (percent < 30) {
+                volumeIcon.textContent = '🔈';
+            } else if (percent < 70) {
+                volumeIcon.textContent = '🔉';
+            } else {
+                volumeIcon.textContent = '🔊';
+            }
+        }
+
+        volumeSlider.addEventListener('click', (e) => {
+            const rect = volumeSlider.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audioPlayer.volume = Math.max(0, Math.min(1, percent));
+            updateVolume();
+        });
+
+        audioPlayer.addEventListener('volumechange', updateVolume);
+        updateVolume();
+
+        // === МАКСИМАЛЬНАЯ СКОРОСТЬ СКАЧИВАНИЯ ===
+        const MAX_CONCURRENT_DOWNLOADS = 50;
+        let downloadQueue = [];
+        let totalDownloaded = 0;
+        let totalFiles = 0;
+
+        async function downloadFileChunked(url) {
+            const response = await fetch(url);
+            const reader = response.body.getReader();
+            const chunks = [];
+            
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                chunks.push(value);
+            }
+            
+            return new Blob(chunks, { type: 'audio/mpeg' });
+        }
+
+        async function processDownloadQueue(zip, updateProgress) {
+            const workers = [];
+            for (let i = 0; i < MAX_CONCURRENT_DOWNLOADS; i++) {
+                workers.push(downloadWorker(zip, updateProgress));
+            }
+            await Promise.all(workers);
+        }
+
+        async function downloadWorker(zip, updateProgress) {
+            while (downloadQueue.length > 0) {
+                const song = downloadQueue.shift();
+                try {
+                    updateProgress(`📥 ${totalDownloaded + 1}/${totalFiles}`);
+                    const blob = await downloadFileChunked(song.url);
+                    const filename = song.originalName || `${song.name} - ${song.artist}.mp3`;
+                    zip.file(filename, blob);
+                    totalDownloaded++;
+                } catch (error) {
+                    console.error('Ошибка загрузки:', song.name);
+                }
+            }
+        }
+
+        async function downloadFolderAsZip(songs, folderName) {
+            if (songs.length === 0) return;
+            
+            const downloadMessage = document.createElement('div');
+            downloadMessage.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #4a4a6a, #1a1a3a);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 25px;
+                font-size: 14px;
+                z-index: 1000;
+                box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            `;
+            downloadMessage.textContent = `🚀 0/${songs.length}`;
+            document.body.appendChild(downloadMessage);
+
+            try {
+                const zip = new JSZip();
+                downloadQueue = [...songs];
+                totalFiles = songs.length;
+                totalDownloaded = 0;
+                
+                await processDownloadQueue(zip, (msg) => {
+                    downloadMessage.textContent = msg;
+                });
+                
+                const zipBlob = await zip.generateAsync({ 
+                    type: 'blob',
+                    compression: 'DEFLATE',
+                    compressionOptions: { level: 1 }
+                });
+                
+                const zipFilename = `${folderName.replace(/[^a-zа-яё0-9]/gi, '_')}_${songs.length}.zip`;
+                saveAs(zipBlob, zipFilename);
+                downloadMessage.textContent = `✅ Готово!`;
+                setTimeout(() => downloadMessage.remove(), 2000);
+                
+            } catch (error) {
+                downloadMessage.remove();
+            }
+        }
+
+        // === ОПТИМИЗИРОВАННОЕ СКАНИРОВАНИЕ ===
+        const urlCache = new Map();
+        const MAX_CONCURRENT_SCAN = 50;
+        
+        let scanQueue = [];
+        let activeScan = 0;
+
+        async function queuedScanRequest(url) {
+            return new Promise((resolve, reject) => {
+                scanQueue.push({ url, resolve, reject });
+                processScanQueue();
+            });
+        }
+
+        async function processScanQueue() {
+            if (activeScan >= MAX_CONCURRENT_SCAN || scanQueue.length === 0) return;
+            activeScan++;
+            const { url, resolve, reject } = scanQueue.shift();
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                resolve(data);
+            } catch (error) {
+                reject(error);
+            } finally {
+                activeScan--;
+                processScanQueue();
+            }
+        }
+
+        async function getAllFolderItems(publicKey, folderPath = '') {
+            let allItems = [];
+            let offset = 0;
+            const limit = 100;
+            
+            try {
+                while (true) {
+                    let url = `https://cloud-api.yandex.net/v1/disk/public/resources?public_key=${publicKey}&limit=${limit}&offset=${offset}`;
+                    if (folderPath) url += `&path=${encodeURIComponent(folderPath)}`;
+                    
+                    const data = await queuedScanRequest(url);
+                    
+                    if (data._embedded?.items) {
+                        allItems = [...allItems, ...data._embedded.items];
+                        if (data._embedded.items.length < limit) break;
+                        offset += limit;
+                        progressMessage.textContent = `📁 ${allItems.length}`;
+                    } else break;
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+            }
+            return allItems;
+        }
+
+        async function getDownloadUrl(publicKey, path) {
+            const cacheKey = `${publicKey}_${path}`;
+            if (urlCache.has(cacheKey)) return urlCache.get(cacheKey);
+            
+            const url = `https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key=${publicKey}&path=${encodeURIComponent(path)}`;
+            const data = await queuedScanRequest(url);
+            urlCache.set(cacheKey, data.href);
+            return data.href;
+        }
+
+        async function scanFolder(publicKey, folderPath = '', folderName = 'Корневая', depth = 0) {
+            progressMessage.style.display = 'block';
+            progressMessage.textContent = `📁 ${folderName}`;
+            
+            const items = await getAllFolderItems(publicKey, folderPath);
+            
+            const currentFolder = {
+                name: folderName,
+                path: folderPath,
+                songs: [],
+                subFolders: []
+            };
+            
+            const subFolders = items.filter(i => i.type === 'dir');
+            const mp3Files = items.filter(i => i.type === 'file' && i.name.toLowerCase().endsWith('.mp3'));
+            
+            await Promise.all(subFolders.map(async (sub) => {
+                const subData = await scanFolder(publicKey, sub.path, sub.name, depth + 1);
+                if (subData.songs.length || subData.subFolders.length) {
+                    currentFolder.subFolders.push(subData);
+                }
+            }));
+            
+            await Promise.all(mp3Files.map(async (mp3) => {
+                try {
+                    const url = await getDownloadUrl(publicKey, mp3.path);
+                    let name = mp3.name.replace(/\.mp3$/i, '');
+                    let artist = folderName === 'Корневая' ? 'Неизвестен' : folderName;
+                    
+                    if (name.includes(' - ')) {
+                        const parts = name.split(' - ');
+                        artist = parts[0].trim();
+                        name = parts[1].trim();
+                    }
+                    
+                    currentFolder.songs.push({
+                        name, artist, url,
+                        folder: folderName,
+                        originalName: mp3.name
+                    });
+                    allTracks.push(currentFolder.songs[currentFolder.songs.length - 1]);
+                    statsEl.innerHTML = `<span>⚡ ${allTracks.length}</span>`;
+                } catch (e) {}
+            }));
+            
+            return currentFolder;
+        }
+
+        function renderFolder(folder, container) {
+            if (!folder.songs.length && !folder.subFolders.length) return;
+            
+            const section = document.createElement('div');
+            section.className = 'folder-section';
+            
+            const header = document.createElement('div');
+            header.className = 'folder-header collapsed';
+            header.innerHTML = `
+                <span>
+                    📁 ${folder.name}
+                    ${folder.songs.length ? `<span class="folder-count">${folder.songs.length}</span>` : ''}
+                    ${folder.songs.length ? `<button class="folder-download">📦 Скачать</button>` : ''}
+                </span>
+                <span class="arrow">▼</span>
+            `;
+            
+            const content = document.createElement('div');
+            content.className = 'folder-content';
+            content.style.display = 'none';
+            
+            if (folder.songs.length) {
+                const list = document.createElement('ul');
+                list.className = 'folder-songs';
+                
+                folder.songs.forEach(song => {
+                    const idx = allTracks.findIndex(t => t.name === song.name && t.folder === song.folder);
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div class="song-info">
+                            <span class="song-name">${song.name}</span>
+                            <span class="song-artist">${song.artist}</span>
+                        </div>
+                        <button class="download-btn">⬇️</button>
+                    `;
+                    
+                    li.querySelector('.song-info').onclick = (e) => {
+                        e.stopPropagation();
+                        playTrack(idx);
+                    };
+                    
+                    li.querySelector('.download-btn').onclick = (e) => {
+                        e.stopPropagation();
+                        downloadTrack(song.url, song.originalName || `${song.name}.mp3`);
+                    };
+                    
+                    if (idx === currentTrack) li.classList.add('active');
+                    list.appendChild(li);
+                });
+                content.appendChild(list);
+            }
+            
+            folder.subFolders.forEach(sub => renderFolder(sub, content));
+            
+            header.querySelector('.folder-download')?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                downloadFolderAsZip(folder.songs, folder.name);
+            });
+            
+            header.addEventListener('click', (e) => {
+                if (e.target.classList.contains('folder-download')) return;
+                header.classList.toggle('collapsed');
+                content.style.display = content.style.display === 'none' ? 'block' : 'none';
+            });
+            
+            section.appendChild(header);
+            section.appendChild(content);
+            container.appendChild(section);
+        }
+
+        async function loadFromUrl() {
+            const url = folderUrlInput.value.trim() || "https://disk.yandex.ru/d/FnqHGrznQ0Ymyw";
+            
+            try {
+                allTracks = [];
+                currentTrack = 0;
+                isPlaying = false;
+                isShuffle = false;
+                isRepeat = false;
+                playBtn.textContent = '▶️';
+                shuffleBtn.style.color = '#64748b';
+                repeatBtn.style.color = '#64748b';
+                foldersContainer.innerHTML = '';
+                urlCache.clear();
+                
+                loadingMessage.style.display = 'block';
+                progressMessage.style.display = 'none';
+                errorMessage.style.display = 'none';
+                loadBtn.disabled = true;
+                
+                trackNameEl.textContent = 'Загрузка...';
+                trackArtistEl.innerHTML = 'Сканируем ⚡';
+                statsEl.innerHTML = '<span>0</span>';
+                
+                const root = await scanFolder(url, '', 'Корневая', 0);
+                
+                if (!allTracks.length) throw new Error('Нет MP3');
+                
+                loadingMessage.style.display = 'none';
+                progressMessage.style.display = 'none';
+                renderFolder(root, foldersContainer);
+                statsEl.innerHTML = `<span>⚡ ${allTracks.length}</span>`;
+                
+                if (allTracks.length) {
+                    loadTrack(0);
+                    updateShuffleOrder();
+                }
+                
+            } catch (error) {
+                loadingMessage.style.display = 'none';
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = 'Ошибка: ' + error.message;
+            } finally {
+                loadBtn.disabled = false;
+            }
+        }
+
+        function loadTrack(index) {
+            if (!allTracks.length) return;
+            currentTrack = index;
+            const t = allTracks[index];
+            trackNameEl.textContent = t.name;
+            trackArtistEl.innerHTML = `${t.artist} <span>📁 ${t.folder}</span>`;
+            audioPlayer.src = t.url;
+            
+            document.querySelectorAll('.folder-songs li').forEach(li => li.classList.remove('active'));
+            setTimeout(() => {
+                const items = document.querySelectorAll('.folder-songs li');
+                if (items[index]) items[index].classList.add('active');
+            }, 100);
+            
+            if (isPlaying) audioPlayer.play().catch(() => {});
+        }
+
+        function togglePlay() {
+            if (!allTracks.length) return;
+            if (isPlaying) {
+                audioPlayer.pause();
+                playBtn.textContent = '▶️';
+            } else {
+                audioPlayer.play().catch(() => {});
+                playBtn.textContent = '⏸️';
+            }
+            isPlaying = !isPlaying;
+        }
+
+        function nextTrack() {
+            if (!allTracks.length) return;
+            const next = getNextTrackIndex();
+            if (next !== currentTrack || isRepeat) {
+                loadTrack(next);
+            }
+        }
+
+        function prevTrack() {
+            if (!allTracks.length) return;
+            const prev = getPrevTrackIndex();
+            loadTrack(prev);
+        }
+
+        function playTrack(index) {
+            loadTrack(index);
+            audioPlayer.play().catch(() => {});
+            playBtn.textContent = '⏸️';
+            isPlaying = true;
+        }
+
+        function downloadTrack(url, filename) {
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Обработчики
+        expandAllBtn?.addEventListener('click', () => {
+            document.querySelectorAll('.folder-header').forEach(h => {
+                h.classList.remove('collapsed');
+                h.nextElementSibling.style.display = 'block';
+            });
+        });
+
+        collapseAllBtn?.addEventListener('click', () => {
+            document.querySelectorAll('.folder-header').forEach(h => {
+                h.classList.add('collapsed');
+                h.nextElementSibling.style.display = 'none';
+            });
+        });
+
+        playBtn.addEventListener('click', togglePlay);
+        prevBtn.addEventListener('click', prevTrack);
+        nextBtn.addEventListener('click', nextTrack);
+        
+        audioPlayer.addEventListener('timeupdate', updateProgress);
+        audioPlayer.addEventListener('loadedmetadata', () => {
+            durationSpan.textContent = formatTime(audioPlayer.duration);
+        });
+        audioPlayer.addEventListener('ended', () => {
+            if (isRepeat) {
+                audioPlayer.currentTime = 0;
+                audioPlayer.play();
+            } else {
+                nextTrack();
+            }
+        });
+        audioPlayer.addEventListener('volumechange', updateVolume);
+
+        loadBtn.addEventListener('click', loadFromUrl);
+        folderUrlInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') loadFromUrl();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                togglePlay();
+            }
+        });
+
+        // Загружаем пример
+        window.addEventListener('load', () => {
+            folderUrlInput.value = 'https://disk.yandex.ru/d/FnqHGrznQ0Ymyw';
+            setTimeout(loadFromUrl, 1000);
+        });
+    </script>
+</body>
+</html>
